@@ -11,14 +11,15 @@ library(shinyjs)
 library(gridExtra)
 library(ggplot2)
 library(stringr)
+library(shinyalert)
 library("rlist")
-#source("plotSol.R")
 library(ASCAT.sc)
 
 path <- getwd()
+result <- "result_manualfitting_projectGSE89648.Rda"
+res <- NULL
 load(paste0(path, "/www/result_object_projectGSE89648.Rda"))
 options(spinner.color="#f06313", spinner.color.background="#ffffff", spinner.size=1)
-
 
 getIndex <- function(sample){
   
@@ -26,10 +27,11 @@ getIndex <- function(sample){
   return (index)
   
 }
+
 getSamples <- function() {
   
-  #load(paste0(path, "/www/result_object_projectGSE206842.Rda"))
-  return (names(res$allTracks.processed))
+  if( !is.null(res)){
+  return (names(res$allTracks.processed)[-c(6, 9, 10)])}
   
 }
 
@@ -111,7 +113,7 @@ ui <- navbarPage(id="nav_page",
                  column(width = 2, textInput("cn2", "Choose second copy number", value = "", width = NULL, placeholder = NULL),
                  ),
                  column(width = 1, radioButtons("ploidy", "OR Shift sample ploidy by:",
-                                                c("-1" = -1, "1"= 1)),
+                                                c("-1" = -1, "1"= 1), selected = 1),
                  )
                  ),
                  fluidRow(column(width=2, actionButton("view", label = "View", style="color: #FFFFFF ; background-color: #ba4a00; border-color: #ba4a00; font-size:100%; border-width: 3px")
@@ -120,20 +122,23 @@ ui <- navbarPage(id="nav_page",
                  column(width = 2,  offset=2, actionButton("shift", label = "Shift ploidy", style="color: #FFFFFF ; background-color: #ba4a00; border-color: #ba4a00; font-size:100%; border-width: 3px"))),
   
                  fluidRow(
-                   withSpinner(plotOutput("profile", brush = "plot_brush", click = "plot_click"),type=3),
+                   withSpinner(plotOutput("profile"),type=3),
                    div(id = "image-container", style = "display:flexbox"),
                    verbatimTextOutput("info")
                  ),
                  useShinyjs(),
+                 useShinyalert(),
                  fluidRow(withSpinner(plotOutput("profile2"),type=3)),
                  fluidRow(column(width = 6, offset=3,actionButton("discard", label = "Discard", style="color: #FFFFFF ; background-color: #ba4a00; border-color: #ba4a00; font-size:100%; border-width: 3px")),
-                          column(width = 3, actionButton("save", label = "Save", style="color: #FFFFFF ; background-color: #ba4a00; border-color: #ba4a00; font-size:100%; border-width: 3px")))))
+                          column(width = 3, downloadButton("save", label = "Save", style="color: #FFFFFF ; background-color: #ba4a00; border-color: #ba4a00; font-size:100%; border-width: 3px")))))
                  
 server <- function(input, output, session) {
   vals <- reactiveVal()
   sampleName <- reactive({
     input$samples
   })
+  
+  result <- reactive({ res })
   
   shiftv <- reactive({
     input$ploidy
@@ -149,6 +154,9 @@ server <- function(input, output, session) {
     updateNavbarPage(session=session,
                      inputId="nav_page",
                      selected="Modifier")
+    # shinyalert("Load Rdata", "Please provide the name of the ASCAT.sc Rdata object on your device that you'd like to modify (with absolute path)", type = "input", inputId = "pathRdata")
+    # if (! is.null(input$pathRdata)){
+    # load(input$pathRdata)}
   })
   
   observeEvent(input$discard, {
@@ -157,25 +165,37 @@ server <- function(input, output, session) {
     
   })
   
-  observeEvent(input$save, {
-    
-    output$profile2 <- renderPlot(NULL)
-    output$profile <- renderPlot(NULL)
-    
-  })
+  # observeEvent(input$save, {
+  #   
+  #   output$profile2 <- renderPlot(NULL)
+  #   output$profile <- renderPlot(NULL)
+  #   
+  #   
+  #   
+  # })
   
-   # include useShinyjs() somewhere in UI
-  #server
+  output$save <- downloadHandler(
+    filename = function() {
+      "result_manualfitting.Rda"
+    },
+    content = function(file) {
+      #resnew <- result()
+      save(res, file=file)
+      
+    }
+  )
+  
   observe({ toggle(id="discard", condition=(input$modify>=1)||(input$shift>=1))})
   observe({ toggle(id="save", condition=(input$modify>=1)||(input$shift>=1))})
   
   observeEvent(input$modify,{
     vals <- as.numeric(chrs())
     
-    #load(paste0(path, "/www/result_object_projectGSE206842.Rda"))
+    
     if(! is.null(chrs())){
       index <- getIndex(sampleName())
-      
+      tryCatch(
+      {
       res <- run_any_refitProfile(res,
                                   sample_indice=index,
                                   chr1=vals[[1]],
@@ -193,7 +213,17 @@ server <- function(input, output, session) {
                                                           purity=res$allSolutions.refitted.manual[[index]]$purity,
                                                           ploidy=res$allSolutions.refitted.manual[[index]]$ploidy,
                                                           gamma=.55))})
-      
+        },
+      error=function(e) {
+        message('An Error Occurred')
+        print(e)
+        shinyalert("Error", "Cannot fit profile: ploidy<0 or purity ∉ [0,1]. Please choose different values", type = "error")
+      },
+      warning=function(w) {
+        message('A Warning Occurred')
+        print(w)
+        shinyalert("Warning", "New solution is ambiguous: reverted to old one", type = "error")
+      })
     }
     else{
       return (NULL)
@@ -206,23 +236,39 @@ server <- function(input, output, session) {
   observeEvent(input$shift,{
     vals <- as.numeric(chrs())
     
-    #load(paste0(path, "/www/result_object_projectGSE206842.Rda"))
+   
     if(! is.null(chrs())){
       index <- getIndex(sampleName())
       shiftp <- as.numeric(shiftv())
       print(shiftp)
-      res <- run_any_refitProfile_shift(res,
-                                        sample_indice=index,
-                                        shift=shiftp,
-                                        CHRS=c(1:22,"X","Y"),
-                                        outdir="./www",
-                                        gridpur=seq(-.05,.05,.01),
-                                        gridpl=seq(-.1,.2,.01))
       
-      output$profile2 <- renderPlot({isolate(plotSolution(res$allTracks.processed[[index]],
-                                                          purity=res$allSolutions.refitted.manual[[index]]$purity,
-                                                          ploidy=res$allSolutions.refitted.manual[[index]]$ploidy,
-                                                          gamma=.55))})
+      tryCatch(
+        {
+          res <- run_any_refitProfile_shift(res,
+                                           sample_indice=index,
+                                           shift=shiftp,
+                                           CHRS=c(1:22,"X","Y"),
+                                           outdir="./www",
+                                           gridpur=seq(-.05,.05,.01),
+                                           gridpl=seq(-.1,.2,.01))
+          
+          output$profile2 <- renderPlot({isolate(plotSolution(res$allTracks.processed[[index]],
+                                                              purity=res$allSolutions.refitted.manual[[index]]$purity,
+                                                              ploidy=res$allSolutions.refitted.manual[[index]]$ploidy,
+                                                              gamma=.55))})
+          #print(res$allSolutions.refitted.manual[[index]])
+        },
+        error=function(e) {
+          message('An Error Occurred')
+          print(e)
+          shinyalert("Error", "Cannot fit profile. Please choose different values", type = "error")
+        },
+        warning=function(w) {
+          message('A Warning Occurred')
+          print(w)
+          shinyalert("Warning", "New solution is ambiguous: reverted to old one", type = "error")
+        }
+      )
       
     }
     else{
@@ -251,25 +297,6 @@ server <- function(input, output, session) {
   })
   
   
-  # output$info <- renderText({
-  #   xy_str <- function(e) {
-  #     if(is.null(e)) {return("NULL\n")}
-  #     else {paste0("x=", round(e$x, 1), " y=", round(e$y, 1), "\n")}
-  #     
-  #   }
-  #   xy_range_str <- function(e) {
-  #     if(is.null(e)) {return("NULL\n")}
-  #     else {paste0("xmin=", round(e$xmin, 1), " xmax=", round(e$xmax, 1), 
-  #            " ymin=", round(e$ymin, 1), " ymax=", round(e$ymax, 1))}
-  #   }
-  #   
-  #   paste0(
-  #     "click: ", xy_str(input$plot_click),
-  #     "brush: ", xy_range_str(input$plot_brush)
-  #   )
-  #   
-  #   
-  # })
   
 } 
 
