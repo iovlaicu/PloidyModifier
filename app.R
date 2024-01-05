@@ -18,8 +18,13 @@ library(ASCAT.sc)
 path <- getwd()
 result <- "result_manualfitting_projectGSE89648.Rda"
 res <- NULL
-load(paste0(path, "/www/result_object_projectGSE89648.Rda"))
+resnew <- NULL
+pathrdata <- NULL
+rdata <- NULL
+#load(paste0(path, "/www/result_object_projectGSE89648.Rda"))
 options(spinner.color="#f06313", spinner.color.background="#ffffff", spinner.size=1)
+
+if (!is.null(pathrdata)){load(pathrdata)}
 
 getIndex <- function(sample){
   
@@ -31,15 +36,13 @@ getIndex <- function(sample){
 getSamples <- function() {
   
   if( !is.null(res)){
-  return (names(res$allTracks.processed)[-c(6, 9, 10)])}
+  #return (names(res$allTracks.processed)[-c(6, 9, 10)])}
+    return (names(res$allTracks.processed))}
   
 }
 
 ui <- navbarPage(id="nav_page",
- 
   title="ASCAT.scFit",  theme = shinytheme("united"),
-                 
-                 
                  tabPanel("Welcome",
                           busy_start_up(
                             loader = tags$img(
@@ -69,7 +72,40 @@ ui <- navbarPage(id="nav_page",
                 background-color:#fae6d4;
                 border:4px solid #833e03;
                 border-radius:4px; 
-            }"))),
+            }",
+                "pre {
+                  display:block;
+                  padding:9.5px;
+                  margin: auto;
+                  width: 350px;
+                  height: 100px;
+                  font-size:14px;
+                  color: #833e03;
+                    line-height:5px;
+                  word-break:break-all;
+                  word-wrap:break-word;
+                  white-space:pre-wrap;
+                  background-color:#fae6d4;
+                    border:4px solid #833e03;
+                  border-radius:4px; 
+                }",
+                "em {
+                  display:block;
+                  padding:9.5px;
+                  margin: auto;
+                  width: 800px;
+                  height: 95px;
+                  font-size:14px;
+                  color: #833e03;
+                    line-height:5px;
+                  word-break:break-all;
+                  word-wrap:break-word;
+                  white-space:pre-wrap;
+                  background-color:#fae6d4;
+                    border:4px solid #833e03;
+                  border-radius:4px; 
+                }"
+                                            ))),
                  div(style = "height:70px"), h1(strong("ASCAT.sc Ploidy Modifier",style={'color: #ba4a00; font-family: Georgia ,serif; text-shadow:
   # # 0 0 7px #fff,
   # # 0 0 10px #fff,
@@ -85,14 +121,14 @@ ui <- navbarPage(id="nav_page",
                                  actionButton("start",
                                               label="Start",
                                               style="color: #FFFFFF ; background-color: #833e03; border-color: #833e03; padding:40px; font-size:100%; border-width: 3px")))),
-                 tabPanel("Modifier", fluidRow(column(width=2, selectInput(
+                 tabPanel("Modifier", fluidRow(column(width=2, pre( selectInput(
                    "samples",
-                   "Choose sample",
+                   "First choose the sample",
                    getSamples(),
                    selected = NULL,
                    multiple = FALSE,
-                   selectize = FALSE,
-                 )),
+                   selectize = FALSE
+                 ))),
                  column(width=2, offset=1, selectInput(
                    "Chr1",
                    "Choose first chromosome",
@@ -100,8 +136,9 @@ ui <- navbarPage(id="nav_page",
                    selected = NULL,
                    multiple = FALSE,
                    selectize = FALSE,
+                   width = "75%"
                 
-                 )), column(width=2,  textInput("cn1", "Choose first copy number", value = "", width = NULL, placeholder = NULL)),
+                 )), column(width=2,  textInput("cn1", "Choose first copy number", value = "", placeholder = NULL, width = "75%")),
                  column(width = 2, selectInput(
                    "Chr2",
                    "Choose second chromosome",
@@ -109,29 +146,29 @@ ui <- navbarPage(id="nav_page",
                    selected = NULL,
                    multiple = FALSE,
                    selectize = FALSE,
+                   width = "75%"
                  )),
-                 column(width = 2, textInput("cn2", "Choose second copy number", value = "", width = NULL, placeholder = NULL),
+                 column(width = 2, textInput("cn2", "Choose second copy number", value = "",  placeholder = NULL, width = "75%")),
+                 column(width = 1, radioButtons("ploidy", "Shift ploidy by:",
+                                                c("-1" = -1, "1"= 1), selected = 1)
+                 )), br(),
+                 fluidRow(column(width=2, offset=1, actionButton("view", label = "View", style="color: #FFFFFF ; background-color: #ba4a00; border-color: #ba4a00; font-size:100%; border-width: 2px")
                  ),
-                 column(width = 1, radioButtons("ploidy", "OR Shift sample ploidy by:",
-                                                c("-1" = -1, "1"= 1), selected = 1),
-                 )
-                 ),
-                 fluidRow(column(width=2, actionButton("view", label = "View", style="color: #FFFFFF ; background-color: #ba4a00; border-color: #ba4a00; font-size:100%; border-width: 3px")
-                 ),
-                 column(width = 2, offset = 4, actionButton("modify", label = "Modify copy number", style="color: #FFFFFF ; background-color: #ba4a00; border-color: #ba4a00; font-size:100%; border-width: 3px")),
-                 column(width = 2,  offset=2, actionButton("shift", label = "Shift ploidy", style="color: #FFFFFF ; background-color: #ba4a00; border-color: #ba4a00; font-size:100%; border-width: 3px"))),
+                 column(width = 2, offset = 3, actionButton("modify", label = "Modify copy number", style="color: #FFFFFF ; background-color: #ba4a00; border-color: #ba4a00; font-size:100%; border-width: 3px")),
+                 column(width = 2,  offset=0, actionButton("shift", label = "Shift ploidy", style="color: #FFFFFF ; background-color: #ba4a00; border-color: #ba4a00; font-size:100%; border-width: 3px"))),
   
                  fluidRow(
                    withSpinner(plotOutput("profile"),type=3),
                    div(id = "image-container", style = "display:flexbox"),
-                   verbatimTextOutput("info")
+                   #verbatimTextOutput("info")
                  ),
                  useShinyjs(),
                  useShinyalert(),
                  fluidRow(withSpinner(plotOutput("profile2"),type=3)),
-                 fluidRow(column(width = 6, offset=3,actionButton("discard", label = "Discard", style="color: #FFFFFF ; background-color: #ba4a00; border-color: #ba4a00; font-size:100%; border-width: 3px")),
+                 fluidRow(column(width = 6, offset=3, actionButton("discard", label = "Discard", style="color: #FFFFFF ; background-color: #ba4a00; border-color: #ba4a00; font-size:100%; border-width: 3px")),
                           column(width = 3, downloadButton("save", label = "Save", style="color: #FFFFFF ; background-color: #ba4a00; border-color: #ba4a00; font-size:100%; border-width: 3px")))))
-                 
+ 
+                  
 server <- function(input, output, session) {
   vals <- reactiveVal()
   sampleName <- reactive({
@@ -150,8 +187,70 @@ server <- function(input, output, session) {
   output$profile <- renderPlot(NULL)
   output$profile2 <- renderPlot(NULL)
   
+  ###################### INPUT MODAL ############################################
+  ###############################################################################
+  
+  dataModal <- function(failed = FALSE) {
+    modalDialog(
+      textInput("rdata", "Choose ASCAT.sc rdata object to load",
+                placeholder = 'Please provide the absolute path'
+      ),
+      
+      if (failed)
+        div(tags$b("Invalid name or path of data object", style = "color: red;")),
+      
+      footer = tagList(
+        #modalButton("Cancel"),
+        actionButton("ok", "OK")
+      )
+    )
+  }
+  
+  observeEvent(input$ok, {
+    tryCatch({
+    pathrdata <<- input$rdata
+    load(pathrdata)
+    res <<- res
+    updateSelectInput(session, "samples",
+                      "First choose the sample",
+                      getSamples())
+    removeModal()
+      },
+    error=function(e) {
+      showModal(dataModal(failed = TRUE))
+    })
+    })
+  
+  # observeEvent(input$ok, {
+  #   # Check that data object exists and is data frame.
+  #   if (!is.null(input$dataset) && nzchar(input$dataset) &&
+  #       exists(input$dataset) && is.data.frame(get(input$dataset))) {
+  #     vals$data <- get(input$dataset)
+  #     removeModal()
+  #   } else {
+  #     showModal(dataModal(failed = TRUE))
+  #   }
+  # })
+  
+  # 
+  # modalDialog(
+  #   title = "Important message",
+  #   div(id = "aa", style = "width: 1100px; height: 100px;", HTML("<b>This is </b>an important message!")),
+  #   easyClose = TRUE
+  # )
+  # 
+  
+  observe({
+    if (input$nav_page == "Modifier")  {
+      showModal(dataModal())
+    }
+  })
+  
+  ###################################################################################
+  ###################################################################################
+  
   observeEvent(input$start, {
-    updateNavbarPage(session=session,
+     updateNavbarPage(session=session,
                      inputId="nav_page",
                      selected="Modifier")
     # shinyalert("Load Rdata", "Please provide the name of the ASCAT.sc Rdata object on your device that you'd like to modify (with absolute path)", type = "input", inputId = "pathRdata")
@@ -180,6 +279,10 @@ server <- function(input, output, session) {
     },
     content = function(file) {
       #resnew <- result()
+      showModal(modalDialog(div(tags$b("Loading...", style = "color: steelblue;")), footer=NULL))
+      on.exit(removeModal())
+      
+      res <- resnew
       save(res, file=file)
       
     }
@@ -196,7 +299,7 @@ server <- function(input, output, session) {
       index <- getIndex(sampleName())
       tryCatch(
       {
-      res <- run_any_refitProfile(res,
+      resnew <<- run_any_refitProfile(res,
                                   sample_indice=index,
                                   chr1=vals[[1]],
                                   ind1=NA,
@@ -209,9 +312,9 @@ server <- function(input, output, session) {
                                   gridpur=seq(-.05,.05,.01),
                                   gridpl=seq(-.1,.2,.01))
       
-      output$profile2 <- renderPlot({isolate(plotSolution(res$allTracks.processed[[index]],
-                                                          purity=res$allSolutions.refitted.manual[[index]]$purity,
-                                                          ploidy=res$allSolutions.refitted.manual[[index]]$ploidy,
+      output$profile2 <- renderPlot({isolate(plotSolution(resnew$allTracks.processed[[index]],
+                                                          purity=resnew$allSolutions.refitted.manual[[index]]$purity,
+                                                          ploidy=resnew$allSolutions.refitted.manual[[index]]$ploidy,
                                                           gamma=.55))})
         },
       error=function(e) {
@@ -244,7 +347,7 @@ server <- function(input, output, session) {
       
       tryCatch(
         {
-          res <- run_any_refitProfile_shift(res,
+          resnew <<- run_any_refitProfile_shift(res,
                                            sample_indice=index,
                                            shift=shiftp,
                                            CHRS=c(1:22,"X","Y"),
@@ -252,9 +355,9 @@ server <- function(input, output, session) {
                                            gridpur=seq(-.05,.05,.01),
                                            gridpl=seq(-.1,.2,.01))
           
-          output$profile2 <- renderPlot({isolate(plotSolution(res$allTracks.processed[[index]],
-                                                              purity=res$allSolutions.refitted.manual[[index]]$purity,
-                                                              ploidy=res$allSolutions.refitted.manual[[index]]$ploidy,
+          output$profile2 <- renderPlot({isolate(plotSolution(resnew$allTracks.processed[[index]],
+                                                              purity=resnew$allSolutions.refitted.manual[[index]]$purity,
+                                                              ploidy=resnew$allSolutions.refitted.manual[[index]]$ploidy,
                                                               gamma=.55))})
           #print(res$allSolutions.refitted.manual[[index]])
         },
