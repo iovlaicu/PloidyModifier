@@ -122,10 +122,22 @@ ui <- navbarPage(id="nav_page",
                       h4(strong("Please choose the sample that you would like to view and modify. Two types of modifications are possible.", style={'font-family: Arial'}), align="center"),
                       h4(strong("You can either change the ploidy of the whole sample (decrease/increase by 1), or modify the copy number of 2 different segments and refit the whole profile based on those.", style={'font-family: Arial'}),align="center"),
                       h4(strong("If you are happy with the result, you can save the new profile. Otherwise, you can discard it and start again.", style={'font-family: Arial'}), align="center")),
-                     br(), fluidRow(column(6, align="center", offset = 3,
+                     br(),  fluidRow(column(6, align="center", offset=3, 
+                                            shinyFilesButton("get_file", "Load data" ,
+                                                             title = "Choose the ASCAT.sc rdata object to load", multiple = FALSE,
+                                                             buttonType = "info", class = NULL)
+                                            
+                     ), br(), br(), br(),
+                     fluidRow(column(6, align="center", offset = 3,
                                  actionButton("start",
                                               label="Start",
-                                              style="color: #FFFFFF ; background-color: #833e03; border-color: #833e03; padding:40px; font-size:100%; border-width: 3px")))),
+                                              style="color: #FFFFFF ; background-color: #833e03; border-color: #833e03; padding:40px; font-size:100%; border-width: 3px",
+                                              buttonType = "info"
+                                              ))
+                                
+                                 )
+               
+                )),
                  
   
   ######################### MODIFIER TAB ################################
@@ -158,6 +170,34 @@ ui <- navbarPage(id="nav_page",
                  
                    )
                  ),
+                
+                
+                column(width = 2, 
+                       dropdownButton(tags$h3("Choose ploidy and purity on the sunrise graph"),
+                                      h4("To change the ploidy and purity of the whole sample directly on the Working station profile, please click the point on the sunrise plot corresponding to the desired ploidy/purity values, then click on 'Apply'"),
+                                      actionButton("sunrise", label = "Apply", style="color: #FFFFFF ; background-color: #ba4a00; border-color: #ba4a00; font-size:100%; border-width: 3px"),
+                                      size= "lg", circle= FALSE, status = "info", label = "Modify purity & ploidy", width = "450px"
+                       )
+                       
+                ),
+                column(width = 2, 
+                       dropdownButton(
+                         sliderInput("ploidy", "Shift ploidy by:", -3, 4, 1, step = 1, round = FALSE,
+                                     ticks = TRUE, animate = FALSE,
+                                     width = NULL, sep = ",", pre = NULL, post = NULL),
+                         actionButton("shift", label = "Apply", style="color: #FFFFFF ; background-color: #ba4a00; border-color: #ba4a00; font-size:100%; border-width: 3px"),
+                         size= "lg", circle= FALSE, status = "info", label = "Shift sample ploidy", width = "450px"
+                       )
+                       
+                ),
+                column(width = 2, 
+                       dropdownButton(tags$h3("Shift ploidy on graph"),
+                                      h4("To shift the ploidy of the whole sample directly on the Working station profile, please click on a segment, then on its desired y axis position, then click on 'Apply'"),
+                                      actionButton("shift_graph", label = "Apply", style="color: #FFFFFF ; background-color: #ba4a00; border-color: #ba4a00; font-size:100%; border-width: 3px"),
+                                      size= "lg", circle= FALSE, status = "info", label = "Shift ploidy on graph", width = "450px"
+                       )
+                       
+                ),
                  column(width=2,
                         dropdownButton(tags$h3("Modify the copy number of 2 segments"),br(),
                         selectInput(
@@ -182,44 +222,16 @@ ui <- navbarPage(id="nav_page",
                  ),
                  textInput("cn2", "Choose second copy number", value = "",  placeholder = NULL, width = "75%"),
                  actionButton("modify", label = "Apply", style="color: #FFFFFF ; background-color: #ba4a00; border-color: #ba4a00; font-size:100%; border-width: 3px"),
-                 size= "lg", circle= FALSE, status = "info", label = "Modify copy number", width = "450px") ),
+                 size= "lg", circle= FALSE, status = "info", label = "Refit segments", width = "450px") ),
                  
-                 column(width = 2, 
-                        dropdownButton(
-                        sliderInput("ploidy", "Shift ploidy by:", -3, 4, 1, step = 1, round = FALSE,
-                                               ticks = TRUE, animate = FALSE,
-                                               width = NULL, sep = ",", pre = NULL, post = NULL),
-                        actionButton("shift", label = "Apply", style="color: #FFFFFF ; background-color: #ba4a00; border-color: #ba4a00; font-size:100%; border-width: 3px"),
-                        size= "lg", circle= FALSE, status = "info", label = "Shift sample ploidy", width = "450px"
-                        )
-                        #radioButtons("ploidy", "Shift ploidy by:",c("-1" = -1, "1"= 1), selected = 1)
-                 ),
-                
-                column(width = 2, 
-                       dropdownButton(tags$h3("Choose ploidy and purity on the sunrise graph"),
-                                      h4("To change the ploidy and purity of the whole sample directly on the Working station profile, please click the point on the sunrise plot corresponding to the desired ploidy/purity values, then click on 'Apply'"),
-                                      actionButton("sunrise", label = "Apply", style="color: #FFFFFF ; background-color: #ba4a00; border-color: #ba4a00; font-size:100%; border-width: 3px"),
-                                      size= "lg", circle= FALSE, status = "info", label = "Modify purity & ploidy", width = "450px"
-                       )
-                       #radioButtons("ploidy", "Shift ploidy by:",c("-1" = -1, "1"= 1), selected = 1)
-                ),
-                
-                column(width = 2, 
-                       dropdownButton(tags$h3("Shift ploidy on graph"),
-                                      h4("To shift the ploidy of the whole sample directly on the Working station profile, please click on a segment, then on its desired y axis position, then click on 'Apply'"),
-                                      actionButton("shift_graph", label = "Apply", style="color: #FFFFFF ; background-color: #ba4a00; border-color: #ba4a00; font-size:100%; border-width: 3px"),
-                                      size= "lg", circle= FALSE, status = "info", label = "Shift ploidy on graph", width = "450px"
-                       )
-                       #radioButtons("ploidy", "Shift ploidy by:",c("-1" = -1, "1"= 1), selected = 1)
-                ),
                 
                 column(width = 2,
                        dropdownButton(tags$h3("Modify segment on graph"),
                           h4("To modify the copy number of 2 different segments directly on the Working station profile, please click on the segment you wish to modify, then on its desired position. Repeat for the second segment, then click on 'Apply'"),
                          actionButton("refit", label = "Apply", style="color: #FFFFFF ; background-color: #ba4a00; border-color: #ba4a00; font-size:100%; border-width: 3px"),
-                         size= "lg", circle= FALSE, status = "info", right= TRUE, label = "Refit segment on graph", width = "450px"
+                         size= "lg", circle= FALSE, status = "info", right= TRUE, label = "Refit segments on graph", width = "450px"
                        )
-                       #radioButtons("ploidy", "Shift ploidy by:",c("-1" = -1, "1"= 1), selected = 1)
+                       
                 )
                 
                 
@@ -228,10 +240,7 @@ ui <- navbarPage(id="nav_page",
     
                 fluidRow(box(width=12, title="Modifier Working Station", status="warning", solidHeader=TRUE, column(width=8, withSpinner(plotOutput("profile2", click="profile2_click"),type=3)), column(width = 4, plotOutput("sunrise2", click = "sunrise2_click")))),
                  fluidRow(column(width = 3,  offset=1, actionButton("discard", label = "Reset",  icon = icon("arrows-rotate",verify_fa = FALSE), style="color: #FFFFFF ; background-color: #ba4a00; border-color: #ba4a00; font-size:100%; border-width: 3px")),
-                          #column(width = 2, actionButton("sunrise", label = "Sunrise", style="color: #FFFFFF ; background-color: #ba4a00; border-color: #ba4a00; font-size:100%; border-width: 3px")),
-                          
-                          #column(width = 3,  actionButton("refit", label = "Refit", style="color: #FFFFFF ; background-color: #ba4a00; border-color: #ba4a00; font-size:100%; border-width: 3px")),
-                          column(width = 3, offset=1,  downloadButton("savetxt", label = "Save txt", style="color: #FFFFFF ; background-color: #ba4a00; border-color: #ba4a00; font-size:100%; border-width: 3px")),
+                           column(width = 3, offset=1,  downloadButton("savetxt", label = "Save profiles", style="color: #FFFFFF ; background-color: #ba4a00; border-color: #ba4a00; font-size:100%; border-width: 3px")),
                                                     column(width = 3, offset=1, downloadButton("save", label = "Save .Rda", style="color: #FFFFFF ; background-color: #ba4a00; border-color: #ba4a00; font-size:100%; border-width: 3px"))), br(), br()))
  
                   
@@ -267,42 +276,95 @@ server <- function(input, output, session) {
   output$profile2 <- renderPlot(NULL)
   
   
-  # observe({  
-  #   shinyFileChoose(input, "get_file", roots = volumes, session = session, fileTypes=c('Rda', 'rda'))
-  #   
-  #   if(!is.null(input$get_file)){
-  #     # browser()
-  #     file_selected<-parseFilePaths(volumes, input$get_file)
-  #     #output$txt_file <- renderText(as.character(file_selected$datapath))
-  #   }
-  # })
-  # 
+  observe({
+    shinyFileChoose(input, "get_file", roots = volumes, session = session)
+
+    if(!is.null(input$get_file)){
+      # browser()
+      file_selected<-parseFilePaths(volumes, input$get_file)
+      pathrdata <<- file_selected
+      
+      #output$txt_file <- renderText(as.character(file_selected$datapath))
+    }
+  })
+
   ###################### INPUT MODAL ############################################
   ###############################################################################
   
-  dataModal <- function(failed = FALSE) {
-    modalDialog(
-      
-      # shinyFilesButton("get_file", "Choose the ASCAT.sc rdata object to load" ,
-      #                  title = "Please select a file:", multiple = FALSE,
-      #                  buttonType = "default", class = NULL),
-      # 
-      
-      
-      textInput("rdata", "Choose ASCAT.sc rdata object to load",
-                placeholder = 'Please provide the absolute path'),
-
-      if (failed)
-        {div(tags$b("Invalid name or path of data object", style = "color: red;"))},
-      
-      footer = tagList(
-        #modalButton("Cancel"),
-        actionButton("ok", "OK")
-      )
-    )
-  }
+  # dataModal <- function(failed = FALSE) {
+  #   modalDialog(
+  #     
+  #    
+  #     textInput("rdata", "Choose ASCAT.sc rdata object to load",
+  #               placeholder = 'Please provide the absolute path'),
+  # 
+  #     if (failed)
+  #       {div(tags$b("Invalid name or path of data object", style = "color: red;"))},
+  #     
+  #     footer = tagList(
+  #       #modalButton("Cancel"),
+  #       actionButton("ok", "OK")
+  #     )
+  #   )
+  # }
+  # 
+  # observeEvent(input$ok, {
+  #   tryCatch({
+  #     
+  #     # ShinyFileChoose(input, "get_file", roots = volumes, session = session)
+  #     # 
+  #     # if(!is.null(input$get_file)){
+  #     #   # browser()
+  #     #   file_selected<-parseFilePaths(volumes, input$get_file)
+  #     #   #output$txt_file <- renderText(as.character(file_selected$datapath))
+  #     # }
+  #     #
+  #     
+  #   pathrdata <<- input$rdata
+  #   load(pathrdata)
+  #   res <<- res
+  #   updateSelectInput(session, "samples", label=NULL,
+  #                     choices=getSamples())
+  #   
+  #   output$profile <- renderPlot({isolate(plot1 <- plotSolution(res$allTracks.processed[[1]],
+  #                                                               purity=res$allSolutions.refitted.auto[[1]]$purity,
+  #                                                               ploidy=res$allSolutions.refitted.auto[[1]]$ploidy,
+  #                                                               ismale=if(!is.null(res$sex)) res$sex[[1]]=="male" else "female",
+  #                                                               gamma=1,
+  #                                                               sol=res$allSolutions[[1]]))
+  #   })
+  #   
+  #   output$profile2 <- renderPlot({isolate(plot2 <- plotSolution(res$allTracks.processed[[1]],
+  #                                                                purity=res$allSolutions.refitted.auto[[1]]$purity,
+  #                                                                ploidy=res$allSolutions.refitted.auto[[1]]$ploidy,
+  #                                                                ismale=if(!is.null(res$sex)) res$sex[[1]]=="male" else "female",
+  #                                                                gamma=1,
+  #                                                                sol=res$allSolutions[[1]]))
+  #   })
+  #   
+  #   output$sunrise1 <- renderPlot({isolate(plotSunrise(res$allSolutions.refitted.auto[[1]]))})
+  #   output$sunrise2 <- renderPlot({isolate(plotSunrise(res$allSolutions.refitted.auto[[1]]))})
+  #   
+  #   removeModal()
+  #     },
+  #   error=function(e) {
+  #     showModal(dataModal(failed = TRUE))
+  #   })
+  #   })
   
-  observeEvent(input$ok, {
+  # observe({
+  #   if (input$nav_page == "Modifier")  {
+  #     showModal(dataModal())
+  #   }
+  # })
+  
+  ###################################################################################
+  ###################################################################################
+  
+  observeEvent(input$start, {
+     updateNavbarPage(session=session,
+                     inputId="nav_page",
+                     selected="Modifier")
     tryCatch({
       
       # ShinyFileChoose(input, "get_file", roots = volumes, session = session)
@@ -312,52 +374,43 @@ server <- function(input, output, session) {
       #   file_selected<-parseFilePaths(volumes, input$get_file)
       #   #output$txt_file <- renderText(as.character(file_selected$datapath))
       # }
-      # 
-    pathrdata <<- input$rdata
-    load(pathrdata)
-    res <<- res
-    updateSelectInput(session, "samples", label=NULL,
-                      choices=getSamples())
-    
-    output$profile <- renderPlot({isolate(plot1 <- plotSolution(res$allTracks.processed[[1]],
-                                                                purity=res$allSolutions.refitted.auto[[1]]$purity,
-                                                                ploidy=res$allSolutions.refitted.auto[[1]]$ploidy,
-                                                                ismale=if(!is.null(res$sex)) res$sex[[1]]=="male" else "female",
-                                                                gamma=1,
-                                                                sol=res$allSolutions[[1]]))
-    })
-    
-    output$profile2 <- renderPlot({isolate(plot2 <- plotSolution(res$allTracks.processed[[1]],
-                                                                 purity=res$allSolutions.refitted.auto[[1]]$purity,
-                                                                 ploidy=res$allSolutions.refitted.auto[[1]]$ploidy,
-                                                                 ismale=if(!is.null(res$sex)) res$sex[[1]]=="male" else "female",
-                                                                 gamma=1,
-                                                                 sol=res$allSolutions[[1]]))
-    })
-    
-    output$sunrise1 <- renderPlot({isolate(plotSunrise(res$allSolutions.refitted.auto[[1]]))})
-    output$sunrise2 <- renderPlot({isolate(plotSunrise(res$allSolutions.refitted.auto[[1]]))})
-    
-    removeModal()
-      },
+      #
+      print(as.character(pathrdata$datapath))
+      filepath <<- as.character(pathrdata$datapath)
+      #pathrdata <<- input$rdata
+      load(filepath)
+      res <<- res
+      print(res$sex[[1]])
+      updateSelectInput(session, "samples", label=NULL,
+                        choices=getSamples())
+      
+      output$profile <- renderPlot({plot1 <- plotSolution(res$allTracks.processed[[1]],
+                                                                  purity=res$allSolutions.refitted.auto[[1]]$purity,
+                                                                  ploidy=res$allSolutions.refitted.auto[[1]]$ploidy,
+                                                                  ismale=if(!is.null(res$sex)) res$sex[[1]]=="male" else "female",
+                                                                  gamma=1,
+                                                                  sol=res$allSolutions[[1]],
+                                                                  colFit = "indianred4",
+                                                                  col2 = "paleturquoise3",
+                                                          colLine="paleturquoise3")
+      })
+      
+      output$profile2 <- renderPlot({isolate(plot2 <- plotSolution(res$allTracks.processed[[1]],
+                                                                   purity=res$allSolutions.refitted.auto[[1]]$purity,
+                                                                   ploidy=res$allSolutions.refitted.auto[[1]]$ploidy,
+                                                                   ismale=if(!is.null(res$sex)) res$sex[[1]]=="male" else "female",
+                                                                   gamma=1,
+                                                                   sol=res$allSolutions[[1]]))
+      })
+      
+      output$sunrise1 <- renderPlot({isolate(plotSunrise(res$allSolutions.refitted.auto[[1]]))})
+      output$sunrise2 <- renderPlot({isolate(plotSunrise(res$allSolutions.refitted.auto[[1]]))})
+      
+      removeModal()
+    },
     error=function(e) {
-      showModal(dataModal(failed = TRUE))
+      #showModal(dataModal(failed = TRUE))
     })
-    })
-  
-  observe({
-    if (input$nav_page == "Modifier")  {
-      showModal(dataModal())
-    }
-  })
-  
-  ###################################################################################
-  ###################################################################################
-  
-  observeEvent(input$start, {
-     updateNavbarPage(session=session,
-                     inputId="nav_page",
-                     selected="Modifier")
     # shinyalert("Load Rdata", "Please provide the name of the ASCAT.sc Rdata object on your device that you'd like to modify (with absolute path)", type = "input", inputId = "pathRdata")
     # if (! is.null(input$pathRdata)){
     # load(input$pathRdata)}
@@ -403,6 +456,50 @@ server <- function(input, output, session) {
       
     }
   )
+  output$savetxt <- downloadHandler(
+    filename = function(){
+      "Profiles_txt.zip"
+    },
+    content = function(file){
+      
+      showModal(modalDialog(div(tags$b("Loading...", style = "color: steelblue;")), footer=NULL))
+      on.exit(removeModal())
+      
+      temp_directory <- file.path(tempdir(), as.integer(Sys.time()))
+      dir.create(temp_directory)
+      
+      for ( i in 1:res$allProfiles.refitted.auto){
+        # writeProfile(res$allProfiles.refitted.auto[[i]],
+        #              samplename=paste0(names(res$allTracks.processed)[i],"-manual_refit"),
+        #              outdir=temp_directory)
+        # 
+        write.table(res$allProfiles.refitted.auto[[i]],
+                    quote=F,
+                    sep="\t",
+                    col.names=T,
+                    row.names=F,
+                    file=paste0(outdir,"/",
+                                paste0(names(res$allTracks.processed)[i],"-manual_refit"),
+                                ".ASCAT.scprofile.txt"))
+      }
+      
+      
+      
+      zip::zip(
+        zipfile = file,
+        files = dir(temp_directory),
+        root = temp_directory
+      )
+      
+    },
+    contentType = "application/zip"
+    
+  )
+  
+  
+  
+  
+  observe({ toggle(id="start", condition=(input$get_file>=1))})
   
   # observe({ toggle(id="discard", condition=(input$view>=1))})
   # observe({ toggle(id="save", condition=(input$view>=1))})
@@ -427,56 +524,27 @@ server <- function(input, output, session) {
       purity <- NULL
       ploidy <- NULL
       
-      # print(coords$y)
-      # print(coords$x)
-      # coords$x <- NULL
-      # coords$y <- NULL
-      # print(coords$x)
-      #seg_index <- which(res$allProfiles.refitted.auto[[index]])
       
       tryCatch(
         {
-          
-          #x1 <- (coords$x[1] - breaks[chr1]) * 1e+06
-          #y1 <- coords$y[1]
-          #x2 <- coords$x[2]
+         
           solution <- res$allSolutions[[1]]
           errs <- solution$errs
           errs <- errs-min(errs)
           errs.max <- max(solution$errs[!is.infinite(solution$errs)])
           errs[is.infinite(errs)] <- errs.max
           errs <- errs/errs.max
-          #print(errs)
-          
-          # purity <- round(coords$y, digits=1)
-          # ploidy <- round(coords$x, digits=1)
-          # 
+         
           purity <- coords$y
           ploidy <- coords$x
           
-          #ploidy <- 0.3884719
-          #purity <- 0.1318182
+          
           ploidy <- as.numeric(colnames(errs)[as.numeric(ploidy)*ncol(errs)])
           purity <- as.numeric(rownames(errs)[(1-as.numeric(purity))*nrow(errs)])
           
           print(purity)
           print(ploidy)
-          # print(which(colnames(errs)==solution$ploidy)/ncol(errs))
-          # print(1-which(rownames(errs)==solution$purity)/nrow(errs))
-          # 
-          # print(which.min(abs(errs-ploidy)))
-          # print(errs[which.min(abs(errs-purity)),])
-          # print(errs[which.min(abs(errs-ploidy)),])
-          # 
-          # print(colnames(errs)[ploidy*ncol(errs)])
-          # print(rownames(errs)[1-purity*nrow(errs)])
-          # print(1-purity*nrow(errs))
-          # # print((1-purity)*(nrow(solution$errs)))
-          # print(ploidy*(ncol(solution$errs)))
-          # print(chr1)
-          # print(chr2)
-          # print(y2)
-          # print(y4)
+          
           resnew <<- res
           resnew$allProfiles.refitted.auto[[index]] <<- getProfile(fitProfile(tracksSingle = resnew$allTracks.processed[[index]], purity, ploidy, ismale=res$sex[index]=="male"))
          
@@ -609,7 +677,8 @@ server <- function(input, output, session) {
                                                               gamma=.55))})
           
           output$sunrise2 <- renderPlot({isolate(plotSunrise(resnew$allSolutions.refitted.manual[[index]]))})
-          
+          coords$y <<- NULL
+          coords$x <<- NULL
           #shinyCatch({message("New solution is ambiguous: reverted to old one")}, prefix = '')
         },
         error=function(e) {
@@ -658,7 +727,7 @@ server <- function(input, output, session) {
                                                           gamma=.55))})
       
       output$sunrise2 <- renderPlot({isolate(plotSunrise(resnew$allSolutions.refitted.manual[[index]]))})
-      
+     
         },
       error=function(e) {
         message('An Error Occurred')
@@ -677,6 +746,57 @@ server <- function(input, output, session) {
     
   })
   
+  observeEvent(input$shift_graph,{
+    vals <- as.numeric(chrs())
+    input$profile2_click
+    
+    if(! is.null(chrs())){
+      index <- getIndex(sampleName())
+      #shiftp <- as.numeric(shiftv())
+      ypos <- as.numeric(round(coords$y[2], digits=0))
+      ploidy <- round(as.numeric(res$allSolutions.refitted.auto[[index]]$ploidy), digits=0)
+      
+      shiftp <- ypos - ploidy
+      print(shiftp)
+      tryCatch(
+        {
+          resnew <<- run_any_refitProfile_shift(res,
+                                                sample_indice=index,
+                                                shift=shiftp,
+                                                CHRS=c(1:22,"X","Y"),
+                                                outdir="./www",
+                                                gridpur=seq(-.05,.05,.01),
+                                                gridpl=seq(-.1,.2,.01))
+          
+          output$profile2 <- renderPlot({isolate(plotSolution(resnew$allTracks.processed[[index]],
+                                                              purity=resnew$allSolutions.refitted.manual[[index]]$purity,
+                                                              ploidy=resnew$allSolutions.refitted.manual[[index]]$ploidy,
+                                                              gamma=.55))})
+          
+          output$sunrise2 <- renderPlot({isolate(plotSunrise(resnew$allSolutions.refitted.manual[[index]]))})
+          #shinyCatch({message("New solution is ambiguous: reverted to old one")}, prefix = '')
+          coords$y <<- NULL
+          coords$x <<- NULL
+          #print(res$allSolutions.refitted.manual[[index]])
+        },
+        error=function(e) {
+          message('An Error Occurred')
+          print(e)
+          shinyalert("Error", "Cannot fit profile. Please choose different values", type = "error")
+        },
+        warning=function(w) {
+          message('A Warning Occurred')
+          print(w)
+          shinyalert("Warning", "New solution is ambiguous: reverted to old one", type = "error")
+        }
+      )
+      
+    }
+    else{
+      return (NULL)
+    }
+    
+  })
   
   
   observeEvent(input$shift,{
@@ -685,11 +805,12 @@ server <- function(input, output, session) {
    
     if(! is.null(chrs())){
       index <- getIndex(sampleName())
-      shiftp <- as.numeric(shiftv())
-      print(shiftp)
       
-      tryCatch(
+      #print(shiftp)
+      
+      out <- tryCatch(
         {
+          shiftp <- as.numeric(shiftv())
           resnew <<- run_any_refitProfile_shift(res,
                                            sample_indice=index,
                                            shift=shiftp,
@@ -713,13 +834,19 @@ server <- function(input, output, session) {
           print(e)
           shinyalert("Error", "Cannot fit profile. Please choose different values", type = "error")
         },
-        warning=function(w) {
-          message('A Warning Occurred')
-          print(w)
-          shinyalert("Warning", "New solution is ambiguous: reverted to old one", type = "error")
-        }
-      )
-      
+        warning=function(w) {w} )
+        #   message('A Warning Occurred')
+        #   print(w)
+        #   shinyalert("Warning", "New solution is ambiguous: reverted to old one", type = "error")
+        # 
+         
+ 
+      if(inherits(out, "warning")){
+        message(out$message)
+        print("done")
+        shinyalert("Warning", "New solution is ambiguous: reverted to old one", type = "error")
+        
+      } 
     }
     else{
       return (NULL)
@@ -732,15 +859,18 @@ server <- function(input, output, session) {
     
     if(! is.null(sampleName())){
       index <- getIndex(sampleName())
-      output$profile <- renderPlot({isolate(plot1 <- plotSolution(res$allTracks.processed[[index]],
+      output$profile <- renderPlot({isolate(plot1 <- plotSolution(tracksSingle= res$allTracks.processed[[index]],
                                                          purity=res$allSolutions.refitted.auto[[index]]$purity,
                                                          ploidy=res$allSolutions.refitted.auto[[index]]$ploidy,
                                                          ismale=if(!is.null(res$sex)) res$sex[[index]]=="male" else "female",
                                                          gamma=1,
-                                                         sol=res$allSolutions[[index]]))
+                                                         sol=res$allSolutions[[index]],
+                                                         colFit = "indianred4",
+                                                         col2 = "paleturquoise3",
+                                                         colLine="paleturquoise3"))
         })
       
-      output$profile2 <- renderPlot({isolate(plot2 <- plotSolution(res$allTracks.processed[[index]],
+      output$profile2 <- renderPlot({isolate(plot2 <- plotSolution(tracksSingle=res$allTracks.processed[[index]],
                                                          purity=res$allSolutions.refitted.auto[[index]]$purity,
                                                          ploidy=res$allSolutions.refitted.auto[[index]]$ploidy,
                                                          ismale=if(!is.null(res$sex)) res$sex[[index]]=="male" else "female",
