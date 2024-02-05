@@ -1,25 +1,19 @@
 library(shiny)
 library(ASCAT.sc)
-# library(shinybusy)
-# library(shinythemes)
-# library(shinyWidgets)
-# library(shinyanimate)
-# library(devtools)
-# library(shinycssloaders)
-# library(shinydlplot)
-# library(periscope)
-# library(shinyjs)
-# library(gridExtra)
-# library(ggplot2)
-# library(stringr)
-# library(shinyalert)
-# library(shinydashboard)
-# library(shinyFiles)
-# library("rlist")
-# library(spsComps)
-#source("myPlotSolution.R")
-
-path <- getwd()
+library(shinybusy)
+library(shinythemes)
+library(shinyWidgets)
+library(shinycssloaders)
+library(shinydlplot)
+#library(periscope)
+library(shinyjs)
+library(gridExtra)
+library(shinyalert)
+library(shinydashboard)
+library(shinyFiles)
+library(spsComps)
+#library(stringr)
+#library("rlist")
 
 reslocal <- NULL
 
@@ -324,9 +318,7 @@ server <- function(input, output, session) {
       
       load(filepath)
       reslocal <<- res
-      #resnew <<- res
-      
-      
+     
       updateSelectInput(session, "samples", label=NULL,
                         choices=getSamples())
       if(!"allSolutions.refitted.manual"%in%names(reslocal))
@@ -687,16 +679,16 @@ server <- function(input, output, session) {
     input$profile2_click
     
     if(! is.null(chrs())){
-      index <- getIndex(sampleName())
-     
-      ypos <- as.numeric(round(coords$y[2], digits=0))
-      ploidy <- round(as.numeric(reslocal$allSolutions.refitted.auto[[index]]$ploidy), digits=0)
       
-      shiftp <- ypos - ploidy
       
       tryCatch(
         {
+          index <- getIndex(sampleName())
           
+          ypos <- as.numeric(round(coords$y[2], digits=0))
+          ploidy <- round(as.numeric(reslocal$allSolutions.refitted.manual[[index]]$ploidy), digits=0)
+          
+          shiftp <- ypos - ploidy
           rescopy <- reslocal
           rescopy$allSolutions.refitted.auto <- rescopy$allSolutions.refitted.manual
           rescopy$allProfiles.refitted.auto <- rescopy$allProfiles.refitted.manual
