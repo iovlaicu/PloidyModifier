@@ -1,36 +1,34 @@
 library(shiny)
-library(shinybusy)
-library(shinythemes)
-library(shinyWidgets)
-library(shinyanimate)
-library(devtools)
-library(shinycssloaders)
-library(shinydlplot)
-library(periscope)
-library(shinyjs)
-library(gridExtra)
-library(ggplot2)
-library(stringr)
-library(shinyalert)
-library(shinydashboard)
-library(shinyFiles)
-library("rlist")
-library(spsComps)
 library(ASCAT.sc)
+# library(shinybusy)
+# library(shinythemes)
+# library(shinyWidgets)
+# library(shinyanimate)
+# library(devtools)
+# library(shinycssloaders)
+# library(shinydlplot)
+# library(periscope)
+# library(shinyjs)
+# library(gridExtra)
+# library(ggplot2)
+# library(stringr)
+# library(shinyalert)
+# library(shinydashboard)
+# library(shinyFiles)
+# library("rlist")
+# library(spsComps)
 #source("myPlotSolution.R")
 
 path <- getwd()
-#result <- "result_manualfitting_projectGSE89648.Rda"
+
 reslocal <- NULL
-#resnew <- NULL
+
 pathrdata <- NULL
 rdata <- NULL
 coords <- NULL
 
-#load(paste0(path, "/www/result_object_projectGSE89648.Rda"))
-options(spinner.color="#f06313", spinner.color.background="#ffffff", spinner.size=1)
 
-#if (!is.null(pathrdata)){load(pathrdata)}
+options(spinner.color="#f06313", spinner.color.background="#ffffff", spinner.size=1)
 
 getIndex <- function(sample){
   
@@ -248,7 +246,6 @@ ui <- navbarPage(id="nav_page",
     
                 fluidRow(box(width=12, title="Modifier Working Station", status="warning", solidHeader=TRUE, column(width=8, withSpinner(plotOutput("profile2", click="profile2_click"),type=3)), column(width = 4, plotOutput("sunrise2", click = "sunrise2_click")))),
                  fluidRow(column(width = 3,  offset=1, actionButton("discard", label = "Reset profile",  icon = icon("arrows-rotate",verify_fa = FALSE), style="color: #FFFFFF ; background-color: #ba4a00; border-color: #ba4a00; font-size:100%; border-width: 3px")),
-                          #column(width = 2,  offset=1, actionButton("keep", label = "Keep profile",  icon = icon("check",verify_fa = FALSE), style="color: #FFFFFF ; background-color: #ba4a00; border-color: #ba4a00; font-size:100%; border-width: 3px")),
                           column(width = 3, offset=1,  downloadButton("savetxt", label = "Save profiles", style="color: #FFFFFF ; background-color: #ba4a00; border-color: #ba4a00; font-size:100%; border-width: 3px")),
                                                     column(width = 3, offset=1, downloadButton("save", label = "Save .Rda", style="color: #FFFFFF ; background-color: #ba4a00; border-color: #ba4a00; font-size:100%; border-width: 3px"))), br(), br()))
  
@@ -411,30 +408,6 @@ server <- function(input, output, session) {
     
   })
   
-  # observeEvent(input$keep, {
-  #   
-  #   vals(input$samples)
-  #   
-  #   if(! is.null(sampleName())){
-  #     print("resnew")
-  #     print(names(resnew$allTracks.processed))
-  #     print("manual")
-  #     print(length(resnew$allSolutions.refitted.manual))
-  #     
-  #     
-  #     res <<- resnew
-  #     print("saved")
-  #     print("res")
-  #     print(names(res$allTracks.processed))
-  #     print("manual")
-  #     print(length(res$allSolutions.refitted.manual))
-  #     
-  #   }
-  #   else{
-  #     return (NULL)
-  #   }
-  #   
-  # })
   
   #########################################################################
   
@@ -529,25 +502,9 @@ server <- function(input, output, session) {
           ploidy <- as.numeric(colnames(errs)[as.numeric(ploidy)*ncol(errs)])
           purity <- as.numeric(rownames(errs)[(1-as.numeric(purity))*nrow(errs)])
           
-         
-          
-          #resnew <<- res
-          
-          # if(!"allProfiles.refitted.manual"%in%names(resnew))
-          # {
-          #   resnew$allProfiles.refitted.manual <<- list()
-          # }
-          
-          
           reslocal$allProfiles.refitted.manual[[index]] <<- getProfile(fitProfile(tracksSingle = reslocal$allTracks.processed[[index]], purity, ploidy, ismale=reslocal$sex[index]=="male"))
          
-          #resnew$allProfiles[[index]] <<- resnew$resnew$allProfiles.refitted.manual[[index]]
-          # 
-          # resnew$allSolutions[[index]]$ploidy <<- ploidy
-          # 
-          # resnew$allSolutions[[index]]$purity <<- purity
-          #res$allSolutions.refitted.manual[[index]] <<- res$allSolutions.refitted.auto[[index]] 
-            
+         
           reslocal$allSolutions.refitted.manual[[index]]$ploidy <<- ploidy
          
           reslocal$allSolutions.refitted.manual[[index]]$purity <<- purity
